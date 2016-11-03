@@ -1,0 +1,6 @@
+[package]
+name = "envoption"
+version = "0.1.0"
+authors = ["Daniel Imfeld <daniel@danielimfeld.com>"]
+
+[dependencies]
