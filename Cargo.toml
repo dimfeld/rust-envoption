@@ -3,5 +3,8 @@ name = "envoption"
 version = "0.1.0"
 authors = ["Daniel Imfeld <daniel@danielimfeld.com>"]
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/dimfeld/rust-envoption"
+readme = "README.md"
+keywords = ["env"]
 
 [dependencies]
