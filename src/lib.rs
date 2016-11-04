@@ -18,29 +18,32 @@ pub enum OptionType<T> where T: FromStr + Debug, T::Err: Error {
 pub enum EnvOptionError<T> where T: Error {
     /// An error occurred while parsing the environment variable.
     /// This error contains the T::Err type from the `parse` function.
-    ParseError(T),
+    ParseError(String, T),
     /// The environment variable was missing.
-    Missing,
+    Missing(String),
 }
 
 impl<T> fmt::Display for EnvOptionError<T> where T: Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
+        match *self {
+            EnvOptionError::ParseError(ref s, ref err) => write!(f, "parsing {}: {}", s, err),
+            EnvOptionError::Missing(ref s) => write!(f, "{} not found", s),
+        }
     }
 }
 
 impl<T> Error for EnvOptionError<T> where T: Error {
     fn description(&self) -> &str {
         match *self {
-            EnvOptionError::ParseError(_) => "parse error",
-            EnvOptionError::Missing => "variable is required"
+            EnvOptionError::ParseError(_, _) => "parse error",
+            EnvOptionError::Missing(_) => "variable is required"
         }
     }
 
     fn cause(&self) -> Option<&Error> {
         match *self {
-            EnvOptionError::ParseError(ref e) => Some(e),
-            EnvOptionError::Missing => None
+            EnvOptionError::ParseError(_, ref e) => Some(e),
+            EnvOptionError::Missing(_) => None
         }
     }
 }
@@ -50,10 +53,10 @@ pub fn get<T>(var_name: &str, mode: OptionType<T>) -> Result<Option<T>, EnvOptio
     match env::var(var_name) {
         Err(_) => match mode {
             OptionType::Optional => Ok(None),
-            OptionType::Required => Err(EnvOptionError::Missing),
+            OptionType::Required => Err(EnvOptionError::Missing(var_name.to_string())),
             OptionType::Default(d) => Ok(Some(d)),
         },
-        Ok(value) => value.parse::<T>().map(|value| Some(value)).map_err(|e| EnvOptionError::ParseError(e)),
+        Ok(value) => value.parse::<T>().map(|value| Some(value)).map_err(|e| EnvOptionError::ParseError(var_name.to_string(), e)),
     }
 }
 
