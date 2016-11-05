@@ -1,10 +1,11 @@
 [package]
 name = "envoption"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Daniel Imfeld <daniel@danielimfeld.com>"]
 license = "MIT OR Apache-2.0"
-description = "Simple functions for parsing environment variables when reading config"
+description = "Functions for parsing environment variables with support for required, optional, and default values"
 repository = "https://github.com/dimfeld/rust-envoption"
+documentation = "https://docs.rs/envoption"
 readme = "README.md"
 keywords = ["env"]
 
