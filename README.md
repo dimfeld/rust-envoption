@@ -1,8 +1,10 @@
 # EnvOption
 
+[![crates.io](https://img.shields.io/crates/v/envoption.svg)](https://crates.io/crates/envoption)
+
 Two simple functions for parsing environment variables when reading config.
 
-These will eventually end up on crates.io but are in early, not-too-tested form right now.
+[Documentation](https://docs.rs/envoption/)
 
 ## License
 
