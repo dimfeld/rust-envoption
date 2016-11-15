@@ -14,7 +14,7 @@ pub enum OptionType<T> where T: FromStr + Debug, T::Err: Error {
     Default(T),
 }
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq)]
 pub enum EnvOptionError<T> where T: Error {
     /// An error occurred while parsing the environment variable.
     /// This error contains the T::Err type from the `parse` function.
@@ -72,7 +72,142 @@ pub fn require<T>(var_name: &str, default: Option<T>) -> Result<T, EnvOptionErro
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
+    pub use super::*;
+    mod get {
+        pub use super::*;
+
+        mod var_not_present {
+            use super::*;
+
+            #[test]
+            fn required() {
+                assert_eq!(get::<String>("__ENVOPTION_TEST_NOT_SET", OptionType::Required), Result::Err(EnvOptionError::Missing(String::from("__ENVOPTION_TEST_NOT_SET"))));
+            }
+
+            #[test]
+            fn optional() {
+                assert_eq!(get::<String>("__ENVOPTION_TEST_NOT_SET", OptionType::Optional), Result::Ok(None));
+            }
+
+            #[test]
+            fn default_value() {
+                assert_eq!(get("__ENVOPTION_TEST_NOT_SET", OptionType::Default(String::from("abcdef"))), Result::Ok(Some(String::from("abcdef"))));
+            }
+
+             #[test]
+            fn required_usize() {
+                assert_eq!(get::<usize>("__ENVOPTION_TEST_NOT_SET", OptionType::Required), Result::Err(EnvOptionError::Missing(String::from("__ENVOPTION_TEST_NOT_SET"))));
+            }
+
+            #[test]
+            fn optional_usize() {
+                assert_eq!(get::<usize>("__ENVOPTION_TEST_NOT_SET", OptionType::Optional), Result::Ok(None));
+            }
+
+            #[test]
+            fn default_value_usize() {
+                assert_eq!(get("__ENVOPTION_TEST_NOT_SET", OptionType::Default(50)), Result::Ok(Some(50)));
+            }
+        }
+
+        mod var_is_present {
+            use super::*;
+            use std::env;
+
+            #[test]
+            fn required() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(get::<String>("__ENV_OPTION_TEST_OPTION", OptionType::Required), Result::Ok(Some(String::from("10"))));
+            }
+
+            #[test]
+            fn optional() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(get::<String>("__ENV_OPTION_TEST_OPTION", OptionType::Optional), Result::Ok(Some(String::from("10"))));
+            }
+
+            #[test]
+            fn default_value() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(get("__ENV_OPTION_TEST_OPTION", OptionType::Default(String::from("abcdef"))), Result::Ok(Some(String::from("10"))));
+            }
+
+            #[test]
+            fn required_usize() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(get::<usize>("__ENV_OPTION_TEST_OPTION", OptionType::Required), Result::Ok(Some(10)));
+            }
+
+            #[test]
+            fn optional_usize() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(get::<usize>("__ENV_OPTION_TEST_OPTION", OptionType::Optional), Result::Ok(Some(10)));
+            }
+
+            #[test]
+            fn default_value_usize() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(get("__ENV_OPTION_TEST_OPTION", OptionType::Default(25)), Result::Ok(Some(10)));
+            }
+        }
     }
+
+
+    mod require {
+        pub use super::*;
+
+        mod var_not_present {
+            use super::*;
+
+            #[test]
+            fn no_default() {
+                assert_eq!(require::<String>("__ENVOPTION_TEST_NOT_SET", None), Result::Err(EnvOptionError::Missing(String::from("__ENVOPTION_TEST_NOT_SET"))));
+            }
+
+            #[test]
+            fn with_default() {
+                assert_eq!(require("__ENVOPTION_TEST_NOT_SET", Some(String::from("abcdef"))), Result::Ok(String::from("abcdef")));
+            }
+
+            #[test]
+            fn no_default_usize() {
+                assert_eq!(require::<usize>("__ENVOPTION_TEST_NOT_SET", None), Result::Err(EnvOptionError::Missing(String::from("__ENVOPTION_TEST_NOT_SET"))));
+            }
+
+            #[test]
+            fn with_default_usize() {
+                assert_eq!(require("__ENVOPTION_TEST_NOT_SET", Some(20)), Result::Ok(20));
+            }
+        }
+
+        mod var_is_present {
+            use super::*;
+            use std::env;
+
+            #[test]
+            fn no_default() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(require::<String>("__ENV_OPTION_TEST_OPTION", None), Result::Ok(String::from("10")));
+            }
+
+            #[test]
+            fn with_default() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(require("__ENV_OPTION_TEST_OPTION", Some(String::from("abcdef"))), Result::Ok(String::from("10")));
+            }
+
+            #[test]
+            fn no_default_usize() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(require::<usize>("__ENV_OPTION_TEST_OPTION", None), Result::Ok(10));
+            }
+
+            #[test]
+            fn with_default_usize() {
+                env::set_var("__ENV_OPTION_TEST_OPTION", "10");
+                assert_eq!(require("__ENV_OPTION_TEST_OPTION", Some(20)), Result::Ok(10));
+            }
+        }
+    }
+
 }
