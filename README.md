@@ -2,7 +2,11 @@
 
 [![crates.io](https://img.shields.io/crates/v/envoption.svg)](https://crates.io/crates/envoption)
 
-Two simple functions for parsing environment variables when reading config.
+Simple functions for parsing environment variables when reading config.
+
+* `require` - Parse an environment variable or return an error if it doesn't exist.
+* `optional` - Same as above, but return an `Option<T>` set to `None` if the variable doesn't exist.
+* `with_default` - As above, but return a default value if the variable doesn't exist.
 
 [Documentation](https://docs.rs/envoption/)
 
