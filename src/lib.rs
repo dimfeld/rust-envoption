@@ -60,15 +60,17 @@ pub fn get<T,B>(var_name: &str, mode: OptionType<B>) -> Result<Option<T>, EnvOpt
     }
 }
 
-/// Sugar around get to avoid the extra `Option` when it will never be `None` anyway.
+/// Get an environment variable, and return an error if it doesn't exist.
 pub fn require<T>(var_name: &str) -> Result<T, EnvOptionError<T::Err>> where T: FromStr + Debug, T::Err: Error {
     get::<T,T>(var_name, OptionType::Required).map(|o| o.unwrap())
 }
 
+/// Get an environment variable, returning a default value if it doesn't exist.
 pub fn with_default<T, B>(var_name: &str, default: B) -> Result<T, EnvOptionError<T::Err>> where B: Into<T>, T: FromStr + Debug, T::Err: Error {
     get(var_name, OptionType::Default(default)).map(|o| o.unwrap())
 }
 
+/// Get an environment variable, returning `None` if it doesn't exist.
 pub fn optional<T>(var_name: &str) -> Result<Option<T>, EnvOptionError<T::Err>> where T: FromStr + Debug, T::Err: Error {
     get::<T,T>(var_name, OptionType::Optional)
 }
